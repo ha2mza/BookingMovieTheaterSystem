@@ -10,4 +10,15 @@ public class MovieTheater implements Serializable{
 	public int MovieTheaterID;
 	public String Name;
 	public String Address;
+	
+	
+	@Override
+	public String toString() {
+		return "==============\n" + 
+	"MovieTheaterID: " + MovieTheaterID + 
+	"\nName: " + Name + 
+	"\nAddress: " + Address + 
+	"\n==============\n\n";
+	}
+	
 }

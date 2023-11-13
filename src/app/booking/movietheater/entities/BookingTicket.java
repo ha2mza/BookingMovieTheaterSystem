@@ -14,4 +14,15 @@ public class BookingTicket implements Serializable{
 	public Session Session;
 	public BookingState bookingState = BookingState.PENDING;
 	public String Note = "";
+	
+	@Override
+	public String toString() {
+		return "==============\n" + 
+	"BookingID: " + BookingID + 
+	"\tBookingDate: " + BookingDate + 
+	"\tQuantityTotal: " + QuantityTotal + 
+	"\tBookingState: " + bookingState + 
+	"\n==============\n\n";
+	}
+	
 }

@@ -61,15 +61,16 @@ public class BookingPlaceService {
 		for (int i = 0; i < bookingPlaces.size(); i++) {
 			if (bookingPlaces.get(i).placeNumber == placeID
 					&& bookingPlaces.get(i).BookingTicket.Session.SessionID == sessionID)
-				return true;
+				return false;
 		}
-		return false;
+		return true;
 	}
 
-	public Boolean hasPlaces(int sessionID, int placeID, int numberPlaces, int nextPlace) {
+	public int[] hasPlaces(int sessionID, int placeID, int numberPlaces) {
 		Boolean hasPlaces = true;
 		int[] nextPlaces = new int[numberPlaces];
 		int flag = 0;
+		nextPlaces[flag] = placeID + numberPlaces;
 		for (int i = placeID; i < placeID + numberPlaces; i++) {
 			Boolean hasPlace = this.hasPlace(sessionID, placeID);
 			hasPlaces = hasPlaces && hasPlace;
@@ -79,19 +80,17 @@ public class BookingPlaceService {
 				flag = 0;
 			}
 		}
-		nextPlace = nextPlaces[0];
 
-		return hasPlaces;
+		return new int[] {(hasPlaces?1:0), nextPlaces[0]};
 	}
 
 	public int findAvailablePlaces(Session session, int numberPlaces) {
 		for (int i = 1; i <= session.Room.Capacity - numberPlaces + 1; i++) {
-			int nextPlace = session.Room.Capacity + 1;
-			Boolean hasPlaces = this.hasPlaces(session.SessionID, i, numberPlaces, nextPlace);
-			if (hasPlaces)
+			int[] hasPlaces = this.hasPlaces(session.SessionID, i, numberPlaces);
+			if (hasPlaces[0] == 1)
 				return i;
 			else
-				i = nextPlace;
+				i = hasPlaces[1];
 		}
 
 		return -1;

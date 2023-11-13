@@ -12,6 +12,8 @@ import app.booking.movietheater.entities.Price;
 import app.booking.movietheater.entities.GlobalHelper;
 import app.booking.movietheater.entities.Movie;
 import app.booking.movietheater.exceptions.PriceValidationException;
+import app.booking.movietheater.exceptions.MovieTheaterValidationException;
+import app.booking.movietheater.exceptions.MovieValidationException;
 import app.booking.movietheater.exceptions.PriceNotFoundException;
 
 public class PriceService {
@@ -37,21 +39,32 @@ public class PriceService {
 		return prices;
 	}
 
-	public void createPrice(String name, Movie movie) throws PriceValidationException {
+	public void createPrice(String name, String _price, Movie movie) throws PriceValidationException {
 		if (movie == null)
 			throw new PriceValidationException("Movie required!!");
 
 		if (name.length() <= 0)
 			throw new PriceValidationException("Name required!!");
+		float amount = 0;
+
+		try {
+			amount = Float.parseFloat(_price);
+		} catch (NumberFormatException e) {
+			throw new PriceValidationException("Price not valid!!");
+		}
+
+		if (amount <= 0)
+			throw new PriceValidationException("Price required!!");
 
 		Price price = new Price();
 		price.Name = name;
 		price.PriceID = GlobalHelper.getNextPriceID();
 		price.Movie = movie;
+		price.Price = amount;
 		prices.add(price);
 	}
 
-	public void editPrice(int PriceID, String name, Movie movie)
+	public void editPrice(int PriceID, String name, String _price, Movie movie)
 			throws PriceValidationException, PriceNotFoundException {
 		if (movie == null)
 			throw new PriceValidationException("Movie required!!");
@@ -59,10 +72,22 @@ public class PriceService {
 		if (name.length() <= 0)
 			throw new PriceValidationException("Name required!!");
 
+		float amount = 0;
+
+		try {
+			amount = Float.parseFloat(_price);
+		} catch (NumberFormatException e) {
+			throw new PriceValidationException("Price not valid!!");
+		}
+
+		if (amount <= 0)
+			throw new PriceValidationException("Price required!!");
+
 		Price price = this.getPrice(PriceID);
 		if (price != null) {
 			price.Name = name;
 			price.Movie = movie;
+			price.Price = amount;
 		} else
 			throw new PriceNotFoundException();
 	}
@@ -75,12 +100,26 @@ public class PriceService {
 		return null;
 	}
 
+	public Price getPrice(String _PriceID) {
+		int PriceID = -1;
+		try {
+			PriceID = Integer.parseInt(_PriceID);
+		} catch (NumberFormatException e) {
+		}
+
+		for (int i = 0; i < prices.size(); i++) {
+			if (prices.get(i).PriceID == (PriceID))
+				return prices.get(i);
+		}
+		return null;
+	}
+
 	public ArrayList<Price> getPrices(Movie movie) {
 		ArrayList<Price> prices = new ArrayList<>();
 		if (movie != null)
-			for (int i = 0; i < prices.size(); i++)
-				if (prices.get(i).Movie.MovieID == movie.MovieID)
-					prices.add(prices.get(i));
+			for (int i = 0; i < this.prices.size(); i++)
+				if (this.prices.get(i).Movie.MovieID == movie.MovieID)
+					prices.add(this.prices.get(i));
 
 		return prices;
 	}
@@ -98,6 +137,17 @@ public class PriceService {
 			prices.remove(indexPrice);
 		else
 			throw new PriceNotFoundException();
+
+	}
+
+	public void deletePriceByMovie(Movie movie) {
+		this.getPrices(movie).forEach((price) -> {
+			try {
+				this.deletePrice(price.PriceID);
+			} catch (PriceNotFoundException e) {
+
+			}
+		});
 
 	}
 

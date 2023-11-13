@@ -36,11 +36,11 @@ public class MovieService {
 		return instance;
 	}
 
-	public void createMovie(String name, String movieDateString, String _duration) throws MovieValidationException {
+	public Movie createMovie(String name, String movieDateString, String _duration) throws MovieValidationException {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
 		int duration = 0;
+
 		if (name.length() <= 0)
 			throw new MovieValidationException("Name required!!");
 
@@ -48,43 +48,67 @@ public class MovieService {
 			throw new MovieValidationException("MovieDate required!!");
 		try {
 			duration = Integer.parseInt(_duration);
-		}
-		catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			throw new MovieValidationException("Duration not valid!!");
 		}
-		
+
 		if (duration <= 0)
 			throw new MovieValidationException("Duration required!!");
 
 		Date movieDate = null;
-		
+
 		try {
 			movieDate = format.parse(movieDateString);
 		} catch (ParseException e) {
 			throw new MovieValidationException("MovieDate not valid!!");
 		}
-		
+
 		Movie movie = new Movie();
 		movie.MovieID = GlobalHelper.getNextMovieID();
 		movie.Duration = duration;
 		movie.MovieDate = movieDate;
 		movie.Name = name;
 		this.movies.add(movie);
+		return movie;
 	}
 
-	public void editMovie(int movieID, String name, Date movieDate, int duration)
+	public void editMovie(String _movieID, String name, String movieDateString, String _duration)
 			throws MovieValidationException, MovieNotFoundException {
 		// duration in minutes // imagine "movie theater has a movie has one minute in
 		// duration"
 
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		int duration = 0;
+		int movieID = -1;
+
+		try {
+			movieID = Integer.parseInt(_movieID);
+		} catch (NumberFormatException e) {
+			throw new MovieValidationException("MovieID not valid!!");
+		}
+
 		if (name.length() <= 0)
 			throw new MovieValidationException("Name required!!");
 
-		if (movieDate != null)
+		if (movieDateString == null)
 			throw new MovieValidationException("MovieDate required!!");
+
+		try {
+			duration = Integer.parseInt(_duration);
+		} catch (NumberFormatException e) {
+			throw new MovieValidationException("Duration not valid!!");
+		}
 
 		if (duration <= 0)
 			throw new MovieValidationException("Duration required!!");
+
+		Date movieDate = null;
+
+		try {
+			movieDate = format.parse(movieDateString);
+		} catch (ParseException e) {
+			throw new MovieValidationException("MovieDate not valid!!");
+		}
 
 		Movie movie = this.getMovie(movieID);
 		if (movie != null) {
@@ -108,6 +132,20 @@ public class MovieService {
 		return null;
 	}
 
+	public Movie getMovie(String _movieID) {
+		int movieID = -1;
+
+		try {
+			movieID = Integer.parseInt(_movieID);
+		} catch (NumberFormatException e) {
+		}
+		
+		for (int i = 0; i < this.movies.size(); i++)
+			if (this.movies.get(i).MovieID == movieID)
+				return this.movies.get(i);
+		return null;
+	}
+
 	public int getIndexMovie(int movieID) {
 		for (int i = 0; i < this.movies.size(); i++)
 			if (this.movies.get(i).MovieID == movieID)
@@ -116,11 +154,22 @@ public class MovieService {
 		return -1;
 	}
 
-	public void deleteMovie(int movieID) throws MovieNotFoundException {
+	public void deleteMovie(String _movieID) throws MovieNotFoundException, MovieValidationException {
+		int movieID = -1;
+
+		try {
+			movieID = Integer.parseInt(_movieID);
+		} catch (NumberFormatException e) {
+			throw new MovieValidationException("MovieID not valid!!");
+		}
+
 		int indexMovie = this.getIndexMovie(movieID);
 
-		if (indexMovie > -1)
+		if (indexMovie > -1) {
+			CategoryMovieService.getInstance().removeCategories(this.movies.get(indexMovie));
+			PriceService.getInstance().deletePriceByMovie(this.movies.get(indexMovie));
 			this.movies.remove(indexMovie);
+		}
 		else
 			throw new MovieNotFoundException();
 	}

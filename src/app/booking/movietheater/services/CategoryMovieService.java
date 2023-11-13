@@ -70,7 +70,7 @@ public class CategoryMovieService {
 	}
 
 
-	public void setMovies(Category category, ArrayList<Movie> movies) throws CategoryMovieValidationException {
+	public void setMovies(Category category, ArrayList<Movie> movies) {
 		for (int i = 0; i < movies.size(); i++) {
 			if(this.getIndexCategoryMovie(category, movies.get(i)) <= -1)
 				this.categoryMovies.add(new CategoryMovie(category, movies.get(i)));
@@ -78,7 +78,7 @@ public class CategoryMovieService {
 	}
 	
 
-	public void setCategories(Movie movie, ArrayList<Category> categories) throws CategoryMovieValidationException {
+	public void setCategories(Movie movie, ArrayList<Category> categories) {
 		for (int i = 0; i < categories.size(); i++) {
 			if(this.getIndexCategoryMovie(categories.get(i), movie) <= -1)
 				this.categoryMovies.add(new CategoryMovie(categories.get(i), movie));
@@ -92,9 +92,10 @@ public class CategoryMovieService {
 	}
 
 
-	public void removeCategories(Movie movie, ArrayList<Category> categories) {
-		for (int i = 0; i < categories.size(); i++) {
-			this.removeCategoryMovie(categories.get(i), movie);
+	public void removeCategories(Movie movie) {
+		for (int i = 0; i < this.categoryMovies.size(); i++) {
+			if(movie.MovieID == this.categoryMovies.get(i).Movie.MovieID)
+				this.categoryMovies.remove(i);
 		}
 	}
 	

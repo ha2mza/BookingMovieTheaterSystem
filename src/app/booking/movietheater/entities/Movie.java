@@ -17,6 +17,11 @@ public class Movie implements Serializable {
 
 	@Override
 	public String toString() {
-		return "==============\n" + "MovieID: " + MovieID + "\nName: " + Name + "\n==============\n\n";
+		return "==============\n" + 
+	"MovieID: " + MovieID + 
+	"\nName: " + Name + 
+	"\nMovieDate: " + MovieDate + 
+	"\nDuration: " + Duration + 
+	"\n==============\n\n";
 	}
 }

@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import app.booking.movietheater.entities.Session;
 import app.booking.movietheater.entities.SessionState;
@@ -18,6 +19,7 @@ import app.booking.movietheater.entities.Movie;
 import app.booking.movietheater.entities.MovieTheater;
 import app.booking.movietheater.entities.Room;
 import app.booking.movietheater.exceptions.SessionValidationException;
+import app.booking.movietheater.exceptions.MovieTheaterValidationException;
 import app.booking.movietheater.exceptions.MovieValidationException;
 import app.booking.movietheater.exceptions.SessionNotFoundException;
 
@@ -43,26 +45,23 @@ public class SessionService {
 	public ArrayList<Session> listSessions() {
 		return sessions;
 	}
-	
-	
+
 	@SuppressWarnings("deprecation")
-	public synchronized void updateSessions(Date time){
+	public synchronized void updateSessions(Date time) {
 		for (int i = 0; i < sessions.size(); i++) {
 			Session session = sessions.get(i);
-			if (session.sessionState == SessionState.PENDING && session.Time.after(time)) {
-				Date sessionEndDate  = (Date)session.Time.clone();
+			if (session.sessionState == SessionState.PENDING && session.Time.before(time)) {
+				Date sessionEndDate = (Date) session.Time.clone();
 				sessionEndDate.setMinutes(session.Time.getMinutes() + session.Movie.Duration);
-				if(sessionEndDate.after(time)) {
+				if (sessionEndDate.before(time)) {
 					session.sessionState = SessionState.END;
-				}
-				else {
+				} else {
 					session.sessionState = SessionState.START;
 				}
-			}
-			else if (session.sessionState == SessionState.START) {
-				Date sessionEndDate  = (Date)session.Time.clone();
+			} else if (session.sessionState == SessionState.START) {
+				Date sessionEndDate = (Date) session.Time.clone();
 				sessionEndDate.setMinutes(session.Time.getMinutes() + session.Movie.Duration);
-				if(sessionEndDate.after(time)) {
+				if (sessionEndDate.after(time)) {
 					session.sessionState = SessionState.END;
 				}
 			}
@@ -82,21 +81,18 @@ public class SessionService {
 		if (room == null)
 			throw new SessionValidationException("Room required!!");
 
-
 		if (_time == null)
 			throw new SessionValidationException("Time required!!");
-		
+
 		try {
 			time = format.parse(_time);
 		} catch (ParseException e) {
 			throw new SessionValidationException("SessionDate not valid!!");
 		}
-		
 
 		if (name.length() <= 0)
 			throw new SessionValidationException("Name required!!");
 
-		
 		Session session = new Session();
 		session.Name = name;
 		session.SessionID = GlobalHelper.getNextSessionID();
@@ -143,12 +139,27 @@ public class SessionService {
 		return null;
 	}
 
-	public ArrayList<Session> getSessions(Movie movie) {
+	public Session getSession(String _SessionID) {
+		int SessionID = -1;
+		try {
+			SessionID = Integer.parseInt(_SessionID);
+		} catch (NumberFormatException e) {
+		}
+		for (int i = 0; i < sessions.size(); i++) {
+			if (sessions.get(i).SessionID == (SessionID))
+				return sessions.get(i);
+		}
+		return null;
+	}
+
+	public ArrayList<Session> getSessions(Movie movie, MovieTheater movieTheater) {
 		ArrayList<Session> sessions = new ArrayList<>();
 		if (movie != null)
-			for (int i = 0; i < sessions.size(); i++)
-				if (sessions.get(i).Movie.MovieID == movie.MovieID)
-					sessions.add(sessions.get(i));
+			for (int i = 0; i < this.sessions.size(); i++)
+				if (this.sessions.get(i).Movie.MovieID == movie.MovieID
+						&& this.sessions.get(i).MovieTheater.MovieTheaterID == movieTheater.MovieTheaterID
+						&& this.sessions.get(i).sessionState == SessionState.PENDING)
+					sessions.add(this.sessions.get(i));
 
 		return sessions;
 	}
@@ -186,6 +197,32 @@ public class SessionService {
 		stream.close();
 		objectStream.close();
 
+	}
+
+	public ArrayList<MovieTheater> getMovieTheaters(int movieID) {
+		ArrayList<MovieTheater> movieTheaters = new ArrayList<MovieTheater>();
+		for (int i = 0; i < sessions.size(); i++) {
+			if (sessions.get(i).Movie.MovieID == (movieID))
+				movieTheaters.add(this.sessions.get(i).MovieTheater);
+		}
+		return movieTheaters;
+	}
+
+	public ArrayList<Movie> getMovies(int MovieTheaterID) {
+		ArrayList<Movie> movies = new ArrayList<Movie>();
+
+		for (int i = 0; i < sessions.size(); i++) {
+			if (sessions.get(i).MovieTheater.MovieTheaterID == MovieTheaterID) {
+				int j = 0;
+				for (; j < movies.size(); j++)
+					if (movies.get(j).MovieID == this.sessions.get(i).Movie.MovieID)
+						break;
+				if (j == movies.size())
+					movies.add(this.sessions.get(i).Movie);
+			}
+		}
+
+		return movies;
 	}
 
 }

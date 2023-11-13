@@ -12,6 +12,8 @@ import app.booking.movietheater.entities.Room;
 import app.booking.movietheater.entities.GlobalHelper;
 import app.booking.movietheater.entities.MovieTheater;
 import app.booking.movietheater.exceptions.RoomValidationException;
+import app.booking.movietheater.exceptions.PriceNotFoundException;
+import app.booking.movietheater.exceptions.PriceValidationException;
 import app.booking.movietheater.exceptions.RoomNotFoundException;
 
 public class RoomService {
@@ -37,7 +39,16 @@ public class RoomService {
 		return rooms;
 	}
 
-	public void createRoom(String name, int capacity, MovieTheater movieTheater) throws RoomValidationException {
+	public void createRoom(String name, String _capacity, MovieTheater movieTheater) throws RoomValidationException {
+
+		int capacity = 0;
+
+		try {
+			capacity = Integer.parseInt(_capacity);
+		} catch (NumberFormatException e) {
+			throw new RoomValidationException("Capacity not valid!!");
+		}
+
 		if (capacity <= 0)
 			throw new RoomValidationException("Room capacity must be great then 0!!");
 
@@ -55,8 +66,16 @@ public class RoomService {
 		rooms.add(room);
 	}
 
-	public void editRoom(int RoomID, String name, int capacity, MovieTheater movieTheater)
+	public void editRoom(int RoomID, String name, String _capacity, MovieTheater movieTheater)
 			throws RoomValidationException, RoomNotFoundException {
+		int capacity = 0;
+
+		try {
+			capacity = Integer.parseInt(_capacity);
+		} catch (NumberFormatException e) {
+			throw new RoomValidationException("Capacity not valid!!");
+		}
+
 		if (capacity <= 0)
 			throw new RoomValidationException("Room capacity must be great then 0");
 
@@ -83,12 +102,28 @@ public class RoomService {
 		return null;
 	}
 
+	public Room getRoom(MovieTheater movieTheater, String _RoomID) {
+		int RoomID = -1;
+
+		try {
+			RoomID = Integer.parseInt(_RoomID);
+		} catch (NumberFormatException e) {
+		}
+		if (movieTheater != null)
+			for (int i = 0; i < rooms.size(); i++) {
+				if (rooms.get(i).MovieTheater.MovieTheaterID == movieTheater.MovieTheaterID
+						&& rooms.get(i).RoomID == (RoomID))
+					return rooms.get(i);
+			}
+		return null;
+	}
+
 	public ArrayList<Room> getRooms(MovieTheater movieTheater) {
 		ArrayList<Room> rooms = new ArrayList<>();
 		if (movieTheater != null)
-			for (int i = 0; i < rooms.size(); i++)
-				if (rooms.get(i).MovieTheater.MovieTheaterID == movieTheater.MovieTheaterID)
-					rooms.add(rooms.get(i));
+			for (int i = 0; i < this.rooms.size(); i++)
+				if (this.rooms.get(i).MovieTheater.MovieTheaterID == movieTheater.MovieTheaterID)
+					rooms.add(this.rooms.get(i));
 
 		return rooms;
 	}
@@ -125,6 +160,17 @@ public class RoomService {
 			this.rooms = (ArrayList<Room>) obj;
 		stream.close();
 		objectStream.close();
+
+	}
+
+	public void deleteRoomByMovieTheater(MovieTheater movieTheater) {
+		this.getRooms(movieTheater).forEach((room) -> {
+			try {
+				this.deleteRoom(room.RoomID);
+			} catch (RoomNotFoundException e) {
+
+			}
+		});
 
 	}
 

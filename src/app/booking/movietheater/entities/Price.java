@@ -11,4 +11,15 @@ public class Price implements Serializable{
 	public String Name;
 	public float Price;
 	public Movie Movie;
+	
+
+	@Override
+	public String toString() {
+		return "==============\n" + 
+	"PriceID: " + PriceID + 
+	"\nName: " + Name + 
+	"\nPrice: " + Price + 
+	"\n==============\n\n";
+	}
+	
 }

@@ -11,6 +11,8 @@ import app.booking.movietheater.entities.GlobalHelper;
 import app.booking.movietheater.entities.MovieTheater;
 import app.booking.movietheater.exceptions.MovieTheaterNotFoundException;
 import app.booking.movietheater.exceptions.MovieTheaterValidationException;
+import app.booking.movietheater.exceptions.MovieValidationException;
+import app.booking.movietheater.exceptions.RoomValidationException;
 
 public class MovieTheaterService {
 	private static MovieTheaterService instance = null;
@@ -40,7 +42,7 @@ public class MovieTheaterService {
 		return movieTheaters;
 	}
 
-	public void createMovieTheater(String name, String address) throws MovieTheaterValidationException {
+	public MovieTheater createMovieTheater(String name, String address) throws MovieTheaterValidationException {
 		MovieTheater movieTheater = new MovieTheater();
 		if (name.length() < 0)
 			throw new MovieTheaterValidationException("Name required!!");
@@ -50,11 +52,18 @@ public class MovieTheaterService {
 		movieTheater.Address = address;
 		movieTheater.MovieTheaterID = GlobalHelper.getNextMovieTheaterID();
 		movieTheaters.add(movieTheater);
+
+		return movieTheater;
 	}
 
-	public void editMovieTheater(int MovieTheaterID, String name, String address)
+	public void editMovieTheater(String _MovieTheaterID, String name, String address)
 			throws MovieTheaterValidationException, MovieTheaterNotFoundException {
-
+		int MovieTheaterID = -1;
+		try {
+			MovieTheaterID = Integer.parseInt(_MovieTheaterID);
+		} catch (NumberFormatException e) {
+			throw new MovieTheaterValidationException("MovieTheaterID not valid!!");
+		}
 		if (name.length() < 0)
 			throw new MovieTheaterValidationException("Name required!!");
 		if (address.length() < 0)
@@ -75,6 +84,20 @@ public class MovieTheaterService {
 		return null;
 	}
 
+	public MovieTheater getMovieTheater(String _movieTheaterID) {
+		int movieTheaterID = -1;
+
+		try {
+			movieTheaterID = Integer.parseInt(_movieTheaterID);
+		} catch (NumberFormatException e) {
+		}
+		
+		for (int i = 0; i < movieTheaters.size(); i++)
+			if (movieTheaters.get(i).MovieTheaterID == movieTheaterID)
+				return movieTheaters.get(i);
+		return null;
+	}
+
 	public int getIndexMovieTheater(int movieTheaterID) {
 		for (int i = 0; i < movieTheaters.size(); i++)
 			if (movieTheaters.get(i).MovieTheaterID == movieTheaterID)
@@ -82,10 +105,21 @@ public class MovieTheaterService {
 		return -1;
 	}
 
-	public void deleteMovieTheater(int movieTheaterID) throws MovieTheaterNotFoundException {
+	public void deleteMovieTheater(String _movieTheaterID) throws MovieTheaterNotFoundException, MovieTheaterValidationException {
+		int movieTheaterID = -1;
+
+		try {
+			movieTheaterID = Integer.parseInt(_movieTheaterID);
+		} catch (NumberFormatException e) {
+			throw new MovieTheaterValidationException("MovieTheaterID not valid!!");
+		}
 		int indexMovieTheater = this.getIndexMovieTheater(movieTheaterID);
-		if (indexMovieTheater > -1)
+		if (indexMovieTheater > -1) {
+			RoomService.getInstance().deleteRoomByMovieTheater(this.movieTheaters.get(indexMovieTheater));
 			movieTheaters.remove(indexMovieTheater);
+			
+			
+		}
 		else
 			throw new MovieTheaterNotFoundException();
 

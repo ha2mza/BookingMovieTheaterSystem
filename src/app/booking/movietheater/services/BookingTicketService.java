@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
@@ -62,8 +64,9 @@ public class BookingTicketService {
 		return bookingTickets;
 	}
 
-	public void createBookingTicket(Session session, ArrayList<Price> prices)
+	public BookingTicket createBookingTicket(Session session, ArrayList<Price> prices)
 			throws BookingTicketValidationException, BookingTicketThreadException {
+		ZoneId defaultZoneId = ZoneId.systemDefault();
 		if (session == null)
 			throw new BookingTicketValidationException("Session required!!");
 
@@ -72,6 +75,8 @@ public class BookingTicketService {
 
 		BookingTicket bookingTicket = new BookingTicket();
 		bookingTicket.Session = session;
+		bookingTicket.QuantityTotal = prices.size();
+		bookingTicket.BookingDate = Date.from(LocalDate.now().atStartOfDay(defaultZoneId).toInstant());
 		Thread threadUniqueID = new Thread(new BookingTicketUniqueIDRunnable(bookingTicket));
 
 		Thread threadBookingPlaces = new Thread(new BookingPlacesRunnable(bookingTicket, prices));
@@ -93,6 +98,8 @@ public class BookingTicketService {
 		}
 
 		bookingTickets.add(bookingTicket);
+		
+		return bookingTicket;
 	}
 
 	public BookingTicket getBookingTicket(String BookingID) {

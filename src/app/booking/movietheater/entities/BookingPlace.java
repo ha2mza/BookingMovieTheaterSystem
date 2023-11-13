@@ -21,4 +21,10 @@ public class BookingPlace implements Serializable {
 		this.placeNumber = placeNumber;
 	}
 
+	@Override
+	public String toString() {
+		return "==============\n" + "PriceName: " + Price.Name + "\nPrice: " + Price.Price + "\nPlaceNumber: "
+				+ placeNumber + "\n==============\n\n";
+	}
+
 }

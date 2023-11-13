@@ -71,6 +71,17 @@ public class CategoryService {
 		}
 		return null;
 	}
+	
+
+	public Category getCategoryOrException(String CategoryID) throws CategoryNotFoundException {
+		for (int i = 0; i < categories.size(); i++) {
+			if (categories.get(i).CategoryID.equals(CategoryID))
+				return categories.get(i);
+		}
+		throw new CategoryNotFoundException();
+	}
+	
+	
 
 	public int getIndexCategory(String CategoryID) {
 		for (int i = 0; i < categories.size(); i++)

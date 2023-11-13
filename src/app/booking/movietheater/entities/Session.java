@@ -15,4 +15,17 @@ public class Session implements Serializable{
 	public Movie Movie;
 	public MovieTheater MovieTheater;
 	public Room Room;
+	
+	@Override
+	public String toString() {
+		return "==============\n" + 
+	"SessionID: " + SessionID + 
+	"\tSessionState: " + sessionState + 
+	"\tName: " + Name + 
+	"\tTime: " + Time + 
+	"\tMovie: " + Movie.Name + 
+	"\tMovieTheater: " + MovieTheater.Name + 
+	"\tRoom: " + Room.Name + 
+	"\n==============\n\n";
+	}
 }
